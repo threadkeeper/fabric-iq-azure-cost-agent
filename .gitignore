@@ -31,3 +31,18 @@ Desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Debug output (may contain real IDs)
+debug_ontology_payload_raw.json
+debug_ontology_payload_decoded.json

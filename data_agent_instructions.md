@@ -110,7 +110,7 @@ Every response to the user MUST end with the following footer, exactly as shown:
 
 ⚠️ **Disclaimer:** AI-generated content may be incorrect. Cost figures are derived from automated queries and may not reflect final invoiced amounts. Please validate against the Azure billing portal.
 
-📊 **[View the full Cost Management Dashboard in Power BI](https://app.powerbi.com/groups/6cce4f23-943b-4b54-ab4f-cae6d041ad00/reports/fc58abc4-7386-470e-bcc4-765256b6b724/ReportSection04cb7247170034c13d74?experience=power-bi)**
+📊 **[View the full Cost Management Dashboard in Power BI](https://app.powerbi.com/groups/<YOUR_WORKSPACE_ID>/reports/<YOUR_REPORT_ID>/<YOUR_REPORT_SECTION>?experience=power-bi)**
 
 ---
 
