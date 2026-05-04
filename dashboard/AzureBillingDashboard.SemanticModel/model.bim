@@ -1,0 +1,583 @@
+{
+  "compatibilityLevel": 1604,
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "sourceQueryCulture": "en-US",
+    "annotations": [
+      {
+        "name": "__PBI_TimeIntelligenceEnabled",
+        "value": "0"
+      }
+    ],
+    "expressions": [
+      {
+        "name": "Lakehouse SQL Endpoint",
+        "annotations": [
+          { "name": "PBI_NavigationStepName", "value": "Navigation" },
+          { "name": "PBI_ResultType", "value": "Text" }
+        ],
+        "kind": "m",
+        "lineageTag": "e1000001-0000-4000-a000-000000000001",
+        "expression": "\"your-lakehouse-sql-endpoint.datawarehouse.fabric.microsoft.com\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]"
+      },
+      {
+        "name": "Lakehouse Database",
+        "annotations": [
+          { "name": "PBI_NavigationStepName", "value": "Navigation" },
+          { "name": "PBI_ResultType", "value": "Text" }
+        ],
+        "kind": "m",
+        "lineageTag": "e1000002-0000-4000-a000-000000000002",
+        "expression": "\"CostManagementLakehouse\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]"
+      }
+    ],
+    "tables": [
+      {
+        "name": "subscription",
+        "lineageTag": "t1000001-0000-4000-a000-000000000001",
+        "columns": [
+          {
+            "name": "subscriptionId",
+            "dataType": "string",
+            "sourceColumn": "subscriptionId",
+            "lineageTag": "c1100001-0000-4000-a000-000000000001",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "subscriptionName",
+            "dataType": "string",
+            "sourceColumn": "subscriptionName",
+            "lineageTag": "c1100002-0000-4000-a000-000000000002",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "subscription",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Sql.Database(#\"Lakehouse SQL Endpoint\", #\"Lakehouse Database\"),",
+                "    dbo_subscription = Source{[Schema=\"dbo\",Item=\"subscription\"]}[Data]",
+                "in",
+                "    dbo_subscription"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "resource_group",
+        "lineageTag": "t2000001-0000-4000-a000-000000000001",
+        "columns": [
+          {
+            "name": "resourceGroupId",
+            "dataType": "string",
+            "sourceColumn": "resourceGroupId",
+            "lineageTag": "c2100001-0000-4000-a000-000000000001",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceGroupName",
+            "dataType": "string",
+            "sourceColumn": "resourceGroupName",
+            "lineageTag": "c2100002-0000-4000-a000-000000000002",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "subscriptionId",
+            "dataType": "string",
+            "sourceColumn": "subscriptionId",
+            "lineageTag": "c2100003-0000-4000-a000-000000000003",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "resource_group",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Sql.Database(#\"Lakehouse SQL Endpoint\", #\"Lakehouse Database\"),",
+                "    dbo_resource_group = Source{[Schema=\"dbo\",Item=\"resource_group\"]}[Data]",
+                "in",
+                "    dbo_resource_group"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "resource",
+        "lineageTag": "t3000001-0000-4000-a000-000000000001",
+        "columns": [
+          {
+            "name": "resourceId",
+            "dataType": "string",
+            "sourceColumn": "resourceId",
+            "lineageTag": "c3100001-0000-4000-a000-000000000001",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceType",
+            "dataType": "string",
+            "sourceColumn": "resourceType",
+            "lineageTag": "c3100002-0000-4000-a000-000000000002",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceGroupName",
+            "dataType": "string",
+            "sourceColumn": "resourceGroupName",
+            "lineageTag": "c3100003-0000-4000-a000-000000000003",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceGroupId",
+            "dataType": "string",
+            "sourceColumn": "resourceGroupId",
+            "lineageTag": "c3100004-0000-4000-a000-000000000004",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "location",
+            "dataType": "string",
+            "sourceColumn": "location",
+            "lineageTag": "c3100005-0000-4000-a000-000000000005",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceName",
+            "dataType": "string",
+            "lineageTag": "c3100006-0000-4000-a000-000000000006",
+            "summarizeBy": "none",
+            "type": "calculated",
+            "isDataTypeInferred": true,
+            "expression": "VAR rid = resource[resourceId] VAR slashCount = LEN(rid) - LEN(SUBSTITUTE(rid, \"/\", \"\")) RETURN IF(slashCount > 0, MID(rid, FIND(UNICHAR(167), SUBSTITUTE(rid, \"/\", UNICHAR(167), slashCount)) + 1, LEN(rid)), rid)"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "resource",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Sql.Database(#\"Lakehouse SQL Endpoint\", #\"Lakehouse Database\"),",
+                "    dbo_resource = Source{[Schema=\"dbo\",Item=\"resource\"]}[Data]",
+                "in",
+                "    dbo_resource"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "cost_record",
+        "lineageTag": "t4000001-0000-4000-a000-000000000001",
+        "columns": [
+          {
+            "name": "costRecordId",
+            "dataType": "int64",
+            "sourceColumn": "costRecordId",
+            "lineageTag": "c4100001-0000-4000-a000-000000000001",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "subscriptionId",
+            "dataType": "string",
+            "sourceColumn": "subscriptionId",
+            "lineageTag": "c4100002-0000-4000-a000-000000000002",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceGroupId",
+            "dataType": "string",
+            "sourceColumn": "resourceGroupId",
+            "lineageTag": "c4100003-0000-4000-a000-000000000003",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "resourceId",
+            "dataType": "string",
+            "sourceColumn": "resourceId",
+            "lineageTag": "c4100004-0000-4000-a000-000000000004",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "meterId",
+            "dataType": "string",
+            "sourceColumn": "meterId",
+            "lineageTag": "c4100005-0000-4000-a000-000000000005",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "serviceId",
+            "dataType": "string",
+            "sourceColumn": "serviceId",
+            "lineageTag": "c4100006-0000-4000-a000-000000000006",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "usageDate",
+            "dataType": "dateTime",
+            "sourceColumn": "usageDate",
+            "lineageTag": "c4100007-0000-4000-a000-000000000007",
+            "summarizeBy": "none",
+            "formatString": "General Date"
+          },
+          {
+            "name": "preTaxCost",
+            "dataType": "double",
+            "sourceColumn": "preTaxCost",
+            "lineageTag": "c4100008-0000-4000-a000-000000000008",
+            "summarizeBy": "sum",
+            "formatString": "$#,##0.00"
+          },
+          {
+            "name": "quantity",
+            "dataType": "double",
+            "sourceColumn": "quantity",
+            "lineageTag": "c4100009-0000-4000-a000-000000000009",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "unitOfMeasure",
+            "dataType": "string",
+            "sourceColumn": "unitOfMeasure",
+            "lineageTag": "c4100010-0000-4000-a000-000000000010",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "chargeType",
+            "dataType": "string",
+            "sourceColumn": "chargeType",
+            "lineageTag": "c4100011-0000-4000-a000-000000000011",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "location",
+            "dataType": "string",
+            "sourceColumn": "location",
+            "lineageTag": "c4100012-0000-4000-a000-000000000012",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Currency",
+            "dataType": "string",
+            "sourceColumn": "Currency",
+            "lineageTag": "c4100013-0000-4000-a000-000000000013",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "usageMonth",
+            "dataType": "string",
+            "lineageTag": "c4100014-0000-4000-a000-000000000014",
+            "summarizeBy": "none",
+            "type": "calculated",
+            "isDataTypeInferred": true,
+            "expression": "FORMAT(cost_record[usageDate], \"YYYY-MM\")"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Total Cost",
+            "lineageTag": "m4100001-0000-4000-a000-000000000001",
+            "expression": "SUM(cost_record[preTaxCost])",
+            "formatString": "$#,##0.00"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "cost_record",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Sql.Database(#\"Lakehouse SQL Endpoint\", #\"Lakehouse Database\"),",
+                "    dbo_cost_record = Source{[Schema=\"dbo\",Item=\"cost_record\"]}[Data]",
+                "in",
+                "    dbo_cost_record"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "meter_category",
+        "lineageTag": "t5000001-0000-4000-a000-000000000001",
+        "columns": [
+          {
+            "name": "meterId",
+            "dataType": "string",
+            "sourceColumn": "meterId",
+            "lineageTag": "c5100001-0000-4000-a000-000000000001",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "meterCategory",
+            "dataType": "string",
+            "sourceColumn": "meterCategory",
+            "lineageTag": "c5100002-0000-4000-a000-000000000002",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "meterSubCategory",
+            "dataType": "string",
+            "sourceColumn": "meterSubCategory",
+            "lineageTag": "c5100003-0000-4000-a000-000000000003",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "meterName",
+            "dataType": "string",
+            "sourceColumn": "meterName",
+            "lineageTag": "c5100004-0000-4000-a000-000000000004",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "unitOfMeasure",
+            "dataType": "string",
+            "sourceColumn": "unitOfMeasure",
+            "lineageTag": "c5100005-0000-4000-a000-000000000005",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "meter_category",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Sql.Database(#\"Lakehouse SQL Endpoint\", #\"Lakehouse Database\"),",
+                "    dbo_meter_category = Source{[Schema=\"dbo\",Item=\"meter_category\"]}[Data]",
+                "in",
+                "    dbo_meter_category"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "service",
+        "lineageTag": "t6000001-0000-4000-a000-000000000001",
+        "columns": [
+          {
+            "name": "serviceId",
+            "dataType": "string",
+            "sourceColumn": "serviceId",
+            "lineageTag": "c6100001-0000-4000-a000-000000000001",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "serviceName",
+            "dataType": "string",
+            "sourceColumn": "serviceName",
+            "lineageTag": "c6100002-0000-4000-a000-000000000002",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "chargeType",
+            "dataType": "string",
+            "sourceColumn": "chargeType",
+            "lineageTag": "c6100003-0000-4000-a000-000000000003",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "service",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Sql.Database(#\"Lakehouse SQL Endpoint\", #\"Lakehouse Database\"),",
+                "    dbo_service = Source{[Schema=\"dbo\",Item=\"service\"]}[Data]",
+                "in",
+                "    dbo_service"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Group By",
+        "lineageTag": "t7000001-0000-4000-a000-000000000001",
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "t7000001-0000-4000-a000-000000000001"
+          },
+          {
+            "name": "ParameterMetadata",
+            "value": "{\"version\":3,\"kind\":2}"
+          }
+        ],
+        "columns": [
+          {
+            "name": "Group By",
+            "dataType": "string",
+            "isHidden": true,
+            "isNameInferred": false,
+            "lineageTag": "c7100001-0000-4000-a000-000000000001",
+            "sourceColumn": "[Value]",
+            "summarizeBy": "none",
+            "type": "calculatedTableColumn",
+            "sortByColumn": "Group By Order"
+          },
+          {
+            "name": "Group By Fields",
+            "dataType": "string",
+            "isHidden": true,
+            "isNameInferred": false,
+            "lineageTag": "c7100002-0000-4000-a000-000000000002",
+            "sourceColumn": "[Name]",
+            "summarizeBy": "none",
+            "type": "calculatedTableColumn"
+          },
+          {
+            "name": "Group By Order",
+            "dataType": "int64",
+            "isHidden": true,
+            "isNameInferred": false,
+            "lineageTag": "c7100003-0000-4000-a000-000000000003",
+            "sourceColumn": "[Ordinal]",
+            "summarizeBy": "sum",
+            "type": "calculatedTableColumn"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Group By",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "{",
+                "    (\"Resource\", NAMEOF('resource'[resourceName]), 0),",
+                "    (\"Resource Group\", NAMEOF('resource_group'[resourceGroupName]), 1),",
+                "    (\"Meter Category\", NAMEOF('meter_category'[meterCategory]), 2),",
+                "    (\"Service\", NAMEOF('service'[serviceName]), 3)",
+                "}"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Granularity",
+        "lineageTag": "t8000001-0000-4000-a000-000000000001",
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "t8000001-0000-4000-a000-000000000001"
+          },
+          {
+            "name": "ParameterMetadata",
+            "value": "{\"version\":3,\"kind\":2}"
+          }
+        ],
+        "columns": [
+          {
+            "name": "Granularity",
+            "dataType": "string",
+            "isHidden": true,
+            "isNameInferred": false,
+            "lineageTag": "c8100001-0000-4000-a000-000000000001",
+            "sourceColumn": "[Value]",
+            "summarizeBy": "none",
+            "type": "calculatedTableColumn",
+            "sortByColumn": "Granularity Order"
+          },
+          {
+            "name": "Granularity Fields",
+            "dataType": "string",
+            "isHidden": true,
+            "isNameInferred": false,
+            "lineageTag": "c8100002-0000-4000-a000-000000000002",
+            "sourceColumn": "[Name]",
+            "summarizeBy": "none",
+            "type": "calculatedTableColumn"
+          },
+          {
+            "name": "Granularity Order",
+            "dataType": "int64",
+            "isHidden": true,
+            "isNameInferred": false,
+            "lineageTag": "c8100003-0000-4000-a000-000000000003",
+            "sourceColumn": "[Ordinal]",
+            "summarizeBy": "sum",
+            "type": "calculatedTableColumn"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Granularity",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "{",
+                "    (\"Daily\", NAMEOF('cost_record'[usageDate]), 0),",
+                "    (\"Monthly\", NAMEOF('cost_record'[usageMonth]), 1)",
+                "}"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "subscription_to_resource_group",
+        "fromTable": "resource_group",
+        "fromColumn": "subscriptionId",
+        "toTable": "subscription",
+        "toColumn": "subscriptionId",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "resource_group_to_resource",
+        "fromTable": "resource",
+        "fromColumn": "resourceGroupId",
+        "toTable": "resource_group",
+        "toColumn": "resourceGroupId",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "resource_to_cost_record",
+        "fromTable": "cost_record",
+        "fromColumn": "resourceId",
+        "toTable": "resource",
+        "toColumn": "resourceId",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "meter_to_cost_record",
+        "fromTable": "cost_record",
+        "fromColumn": "meterId",
+        "toTable": "meter_category",
+        "toColumn": "meterId",
+        "crossFilteringBehavior": "oneDirection"
+      },
+      {
+        "name": "service_to_cost_record",
+        "fromTable": "cost_record",
+        "fromColumn": "serviceId",
+        "toTable": "service",
+        "toColumn": "serviceId",
+        "crossFilteringBehavior": "oneDirection"
+      }
+    ]
+  }
+}

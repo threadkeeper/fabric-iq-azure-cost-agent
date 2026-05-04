@@ -1,0 +1,33 @@
+# Environment / secrets
+.env
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.dll
+*.exe
+*.pdb
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+# Visual Studio
+.vs/
+*.rsuser
+launchSettings.json
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE
+.idea/
+*.swp
+*.swo
