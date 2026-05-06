@@ -4,9 +4,9 @@ Build a Fabric Ontology and graph database from Azure cost data — per resource
 
 ## What This Does
 
-1. **`GetKeys.ps1`** — Creates a Service Principal and populates `.env` (one command)
-2. **`01_download_cost_data.ipynb`** — Downloads cost data at **per-resource per-day** granularity and writes Lakehouse tables
-3. **`02_create_cost_ontology.ipynb`** — Creates the Ontology and graph database via the Fabric REST API
+1. **`GetKeys.ps1`** -- Creates a Service Principal, populates `.env`, optionally provisions Azure Key Vault
+2. **`01_download_cost_data.ipynb`** -- Downloads cost data at **per-resource per-day** granularity and writes Lakehouse tables
+3. **`02_create_cost_ontology.ipynb`** -- Creates the Ontology and graph database via the Fabric REST API
 
 No pipelines to configure. No portal clicking beyond creating a workspace and Lakehouse.
 
@@ -16,12 +16,13 @@ No pipelines to configure. No portal clicking beyond creating a workspace and La
 
 | File | What it Does |
 |------|-------------|
-| [GetKeys.ps1](GetKeys.ps1) | Creates SPN, assigns Cost Management Reader, writes `.env` |
-| [notebooks/01_download_cost_data.ipynb](notebooks/01_download_cost_data.ipynb) | Downloads MTD cost CSV, writes 6 Delta tables |
+| [GetKeys.ps1](GetKeys.ps1) | Creates SPN, assigns Cost Management Reader, writes `.env` (optionally provisions Key Vault) |
+| [SetupDashboard.ps1](SetupDashboard.ps1) | Injects Lakehouse connection into PBI project from `.env` |
+| [notebooks/01_download_cost_data.ipynb](notebooks/01_download_cost_data.ipynb) | Downloads cost CSVs in ≤30-day chunks, writes 6 Delta tables |
 | [notebooks/02_create_cost_ontology.ipynb](notebooks/02_create_cost_ontology.ipynb) | Builds ontology from tables via REST API |
 | [cost-management-ontology.rdf](cost-management-ontology.rdf) | RDF file for Ontology Playground (optional) |
 | [dashboard/](dashboard/) | Power BI project (PBIP) — source-of-truth dashboard |
-| [.env](.env) | Credentials (gitignored) |
+| [.env](.env) | Credentials + config (gitignored). Secrets are optional here when using Key Vault |
 
 ---
 
@@ -36,6 +37,16 @@ az login
 
 This creates `CostManagement-Fabric-SPN`, assigns **Cost Management Reader**, and writes all credentials to `.env`.
 
+#### (Recommended) Store secrets in Azure Key Vault for pipeline use
+
+```powershell
+.\GetKeys.ps1 -KeyVaultName "kv-costmgmt-yourname"
+```
+
+This additionally creates a Key Vault, stores the SPN secrets, and sets `KEY_VAULT_URL` in `.env`. Notebooks auto-detect Key Vault and pull secrets via `mssparkutils.credentials.getSecret()` at runtime — no plain-text secrets on the Lakehouse.
+
+> **Security:** Without Key Vault, the `.env` file contains `AZURE_CLIENT_SECRET` in plain text on Lakehouse Files. This is acceptable for local dev but **not recommended for shared workspaces or automated pipelines**. With Key Vault, the secret never leaves the vault.
+
 ### 2. Set Up Fabric (portal — one-time)
 
 1. Open [Microsoft Fabric](https://app.fabric.microsoft.com)
@@ -48,18 +59,22 @@ This creates `CostManagement-Fabric-SPN`, assigns **Cost Management Reader**, an
 
 1. Open `01_download_cost_data` in Fabric
 2. Attach the Lakehouse: left pane → Lakehouses → Add → select `CostManagementLakehouse`
-3. Click **Run all**
-4. Wait for the cost report to generate (~5 min), download, and write tables
-5. Verify tables appear in the Lakehouse: `subscription`, `resource_group`, `resource`, `meter_category`, `service`, `cost_record`
+3. Click **Save** — this persists the Lakehouse attachment so pipeline runs and future opens use it automatically
+4. Click **Run all**
+5. Wait for the cost report to generate (~5 min), download, and write tables
+6. Verify tables appear in the Lakehouse: `subscription`, `resource_group`, `resource`, `meter_category`, `service`, `cost_record`
+
+**Incremental refresh:** The notebook fetches the last N days (set by `COST_LOOKBACK_DAYS` in `.env`, default 7). Existing data outside that window is preserved. On subsequent runs, only the fetched date range is replaced — dimension tables merge new rows without losing existing ones.
 
 ### 4. Run Notebook 2 — Create the Ontology
 
 1. Open `02_create_cost_ontology` in Fabric
 2. Attach the same Lakehouse
-3. Click **Run all**
-4. The notebook detects which tables/columns exist, builds the ontology definition, and POSTs it to the Fabric API
-5. Wait for graph DB creation (~10-15 min)
-6. The ontology appears in your workspace
+3. Click **Save** — same as above, persists the attachment for pipeline runs
+4. Click **Run all**
+5. The notebook detects which tables/columns exist, builds the ontology definition, and POSTs it to the Fabric API
+6. Wait for graph DB creation (~10-15 min)
+7. The ontology appears in your workspace
 
 ### 5. Query the Graph
 
@@ -78,28 +93,38 @@ ORDER BY totalCost DESC
 
 Create a pipeline that runs both notebooks sequentially on a schedule.
 
+> **Authentication in pipelines:** If you ran `GetKeys.ps1 -KeyVaultName`, notebooks automatically pull secrets from Key Vault via `mssparkutils.credentials.getSecret()`. No plain-text secrets needed on the Lakehouse. If you didn't set up Key Vault, notebooks fall back to reading `AZURE_CLIENT_SECRET` from the `.env` file in Lakehouse Files.
+>
+> **Notebook 2 does not need SPN credentials** -- it uses `mssparkutils.credentials.getToken()` for the Fabric API and `sempy.fabric` for workspace/lakehouse resolution.
+
+**Key Vault pipeline prerequisites:**
+1. **Create a workspace identity** (one-time): Workspace Settings → **Workspace identity** tab → **+ Workspace identity**. This creates a managed service principal for your workspace ([docs](https://learn.microsoft.com/en-us/fabric/security/workspace-identity))
+2. **Grant Key Vault access**: Azure Portal → your Key Vault → **Access control (IAM)** → Add role assignment → **Key Vault Secrets User** → search for your workspace name (it appears as the workspace identity service principal) → Assign
+3. If the Key Vault has public network access disabled, create a **managed private endpoint** from your Fabric workspace to the vault (Workspace Settings → Network Security → Managed private endpoints), then approve it on the Key Vault side
+4. Upload `.env` to Lakehouse Files (contains `KEY_VAULT_URL` and non-secret config)
+
+**Create the pipeline:**
+
 1. In your workspace → **+ New item** → **Data pipeline** → name it `CostOntology-Refresh`
 2. From the **Activities** pane, drag a **Notebook** activity onto the canvas
 3. In the **Settings** tab:
    - **Notebook**: select `01_download_cost_data`
-   - **Lakehouse**: select `CostManagementLakehouse`
 4. Drag a second **Notebook** activity onto the canvas
 5. In its **Settings** tab:
    - **Notebook**: select `02_create_cost_ontology`
-   - **Lakehouse**: select `CostManagementLakehouse`
 6. **Connect them**: drag the green ✓ arrow from the first activity to the second (this ensures notebook 2 only runs after notebook 1 succeeds)
 7. Click **Save**
 8. Click **Schedule** (top toolbar):
    - Toggle **Scheduled run** to **On**
+   - **Schedule type**: select **Interval based**
    - **Repeat**: Every `6` **Hours**
-   - **Start time**: pick a start (e.g. `00:00`)
-   - **Time zone**: select your time zone
+   - **Max concurrent runs**: `1` (prevents overlapping runs if a previous run is still in progress)
    - **Start date / End date**: set as needed (or leave open-ended)
 9. Click **Apply**
 
 The pipeline will now run every 6 hours:
 - Notebook 1 downloads fresh cost data and overwrites the Lakehouse tables
-- Notebook 2 deletes the existing ontology and recreates it with the latest data
+- Notebook 2 updates the existing ontology definition in-place (preserving the ontology ID so Data Agent references remain valid)
 
 ---
 
@@ -264,13 +289,14 @@ subscription ──1:M──▶ resource_group ──1:M──▶ resource ─�
 1. **Enable Developer Mode** in Power BI Desktop:
    - File → Options and Settings → Options → Preview features → ✅ **Power BI Project (.pbip) save format**
    - Restart Power BI Desktop
-2. **Open the project**: File → Open report → Browse → navigate to `dashboard/AzureBillingDashboard.pbip`
-3. **Set connection parameters**:
-   - In the model pane (or Home → Transform data → Edit parameters), update:
-     - `Lakehouse SQL Endpoint` — your Lakehouse SQL analytics endpoint URL
-     - `Lakehouse Database` — your Lakehouse name (e.g. `CostManagementLakehouse`)
-   - To find your SQL endpoint: Fabric Portal → Lakehouse → Settings → SQL analytics endpoint → copy the **Server** value
-4. **Apply changes** → Power BI will connect and load the tables
+2. **Configure connection** (one-time):
+   ```powershell
+   .\SetupDashboard.ps1
+   ```
+   This reads `LAKEHOUSE_SQL_ENDPOINT` and `LAKEHOUSE_DATABASE` from `.env` (prompts if missing) and writes them into the semantic model.
+3. **Open the project**: File → Open report → Browse → navigate to `dashboard/AzureBillingDashboard.pbip`
+4. **Sign in**: When prompted, choose **Microsoft account** and sign in with your Entra ID — credentials are cached for future opens
+5. **Apply changes** → Power BI will connect and load the tables
 5. **Build/adjust visuals** (if needed):
    - The report definition pre-configures the chart layout. If visuals don't render automatically:
      - Add a **Stacked Column Chart**: X-axis = `Granularity` field parameter, Y-axis = `Total Cost` measure, Legend = `Group By` field parameter
@@ -311,17 +337,20 @@ When the Data Agent returns cost figures, cross-reference against this dashboard
 ┌──────────────────────────────────────────────────┐
 │  GetKeys.ps1 (local)                             │
 │  az login → create SPN → assign role → .env      │
+│  (optional) → create Key Vault → store secrets   │
 └────────────────────┬─────────────────────────────┘
                      │ upload .env + notebooks
                      ▼
 ┌──────────────────────────────────────────────────┐
 │  01_download_cost_data.ipynb (Fabric)            │
-│  Auth → Cost Details Report API → CSV → 6 tables │
+│  Auth (Key Vault or .env) → Cost Details API →   │
+│  CSV → 6 Delta tables                            │
 └────────────────────┬─────────────────────────────┘
                      │
                      ▼
 ┌──────────────────────────────────────────────────┐
 │  02_create_cost_ontology.ipynb (Fabric)          │
+│  Auth: Fabric workspace identity (no SPN)        │
 │  Detect tables → Build entities/bindings →       │
 │  POST to Ontology REST API → Graph DB            │
 └────────────────────┬─────────────────────────────┘
@@ -349,11 +378,16 @@ When the Data Agent returns cost figures, cross-reference against this dashboard
 |-------|-------|-----|
 | 429 Too Many Requests | Query API rate limit | Use the Cost Details Report API (notebook already does this) |
 | 400 Bad Request | `TheLastMonth` not supported on MCA | Use `MonthToDate` or `Custom` with explicit dates |
-| Schema mismatch on table write | Table schema changed between runs | Already handled — notebooks use `overwriteSchema=true` |
+| 401 Unauthorized on token endpoint | SPN client secret expired or rotated | Re-run `GetKeys.ps1` (resets secret), re-upload `.env`. With Key Vault: `GetKeys.ps1 -KeyVaultName` updates both |
+| Schema mismatch on table write | Table schema changed between runs | Already handled -- notebooks use `overwriteSchema=true` |
 | `TABLE_OR_VIEW_NOT_FOUND` | Dimension table missing (CSV lacked columns) | Notebook skips missing tables gracefully |
-| `AMBIGUOUS_REFERENCE` | Duplicate column names after join | Already handled — lookup columns use `_` prefix aliases |
-| Ontology `ALMOperationImportFailed` | sourceKeyRef must be entity's primary key | Already fixed — uses entity `entityIdParts` for key refs |
+| `AMBIGUOUS_REFERENCE` | Duplicate column names after join | Already handled -- lookup columns use `_` prefix aliases |
+| Duplicate key in PBI relationship | Mixed-case GUIDs in dimension tables | Already handled -- M queries lowercase all key columns and group by primary key |
+| `resourceType` column missing | CSV doesn't have ResourceType (MCA accounts) | Already handled -- extracted from ARM resourceId path via regex |
+| Ontology `ALMOperationImportFailed` | sourceKeyRef must be entity's primary key | Already fixed -- uses entity `entityIdParts` for key refs |
 | Spark 430 capacity error | Fabric capacity exhausted | Stop sessions in Monitoring hub, wait, or upgrade capacity |
+| Key Vault access denied in pipeline | Workspace identity lacks vault permissions | Add **Key Vault Secrets User** role on the vault for the workspace identity (Azure Portal → Key Vault → Access control → Add role assignment) |
+| Key Vault 403 Forbidden / `ForbiddenByConnection` | Key Vault has public access disabled | Create a managed private endpoint from the Fabric workspace to the vault (Workspace Settings → Network Security), then approve it on the Key Vault side |
 
 ---
 
@@ -366,3 +400,4 @@ When the Data Agent returns cost figures, cross-reference against this dashboard
 - [Query Fabric Graph Database](https://learn.microsoft.com/en-us/fabric/graph/tutorial-query-code-editor)
 - [Ontology Playground](https://microsoft.github.io/Ontology-Playground/)
 - [build-fabric-ontology-demo (Healthcare example)](https://github.com/microsoft/build-fabric-ontology-demo)
+- [Azure Key Vault + Fabric mssparkutils](https://learn.microsoft.com/en-us/fabric/data-engineering/microsoft-spark-utilities#credentials-utilities)

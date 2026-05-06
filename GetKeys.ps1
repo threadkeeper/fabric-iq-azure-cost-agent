@@ -1,12 +1,13 @@
 #
-# GetKeys.ps1 — Create a Service Principal for Azure Cost Management and populate .env
+# GetKeys.ps1 -- Create a Service Principal for Azure Cost Management and populate .env
 #
 # Prerequisites:
 #   - Azure CLI installed (az)
 #   - Logged in via: az login
 #
 # Usage:
-#   .\GetKeys.ps1
+#   .\GetKeys.ps1                         # SPN + .env only
+#   .\GetKeys.ps1 -KeyVaultName "kv-cost"  # Also create Key Vault and store secrets
 #
 # What it does:
 #   1. Creates the .env file if it doesn't exist
@@ -14,7 +15,12 @@
 #   3. Creates the service principal if it doesn't exist
 #   4. Assigns "Cost Management Reader" role on the current subscription
 #   5. Writes all credentials to the .env file
+#   6. (Optional) Creates an Azure Key Vault and stores secrets for pipeline use
 #
+
+param(
+    [string]$KeyVaultName = ""
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -79,6 +85,18 @@ AZURE_SPN_NAME=
 
 # Ontology display name (optional)
 ONTOLOGY_DISPLAY_NAME=CostManagementOntology
+
+# Cost data lookback (number of days to fetch/refresh, default 7)
+COST_LOOKBACK_DAYS=7
+
+# Azure Key Vault (for pipeline auth - set by GetKeys.ps1 -KeyVaultName)
+# When set, notebooks pull secrets from Key Vault instead of .env
+KEY_VAULT_URL=
+
+# Fabric Lakehouse connection (used by SetupDashboard.ps1)
+# Find your SQL endpoint: Fabric Portal -> Lakehouse -> Settings -> SQL analytics endpoint -> Server
+LAKEHOUSE_SQL_ENDPOINT=
+LAKEHOUSE_DATABASE=CostManagementLakehouse
 "@ | Set-Content -Path $EnvFile -Encoding UTF8
     Write-Info "$EnvFile created."
 } else {
@@ -161,8 +179,17 @@ AZURE_CLIENT_SECRET=$ClientSecret
 # Service Principal display name (for reference)
 AZURE_SPN_NAME=$AppName
 
-# Ontology display name (optional — used by 02_create_cost_ontology notebook)
+# Ontology display name (optional -- used by 02_create_cost_ontology notebook)
 ONTOLOGY_DISPLAY_NAME=CostManagementOntology
+
+# Azure Key Vault (for pipeline auth - set by GetKeys.ps1 -KeyVaultName)
+# When set, notebooks pull secrets from Key Vault instead of .env
+KEY_VAULT_URL=
+
+# Fabric Lakehouse connection (used by SetupDashboard.ps1)
+# Find your SQL endpoint: Fabric Portal -> Lakehouse -> Settings -> SQL analytics endpoint -> Server
+LAKEHOUSE_SQL_ENDPOINT=
+LAKEHOUSE_DATABASE=CostManagementLakehouse
 "@ | Set-Content -Path $EnvFile -Encoding UTF8
 
 Write-Info "$EnvFile updated successfully."
@@ -191,3 +218,67 @@ Write-Host "    3. Run 01_download_cost_data.ipynb"
 Write-Host "    4. Run 02_create_cost_ontology.ipynb"
 Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+
+# ─── Step 6 (Optional): Create Key Vault and store secrets ───────────────────
+if ($KeyVaultName) {
+    Write-Host ""
+    Write-Info "Setting up Azure Key Vault: $KeyVaultName"
+
+    # Get resource group for Key Vault (use the subscription's default location)
+    $kvResourceGroup = "rg-cost-management-keys"
+    $kvLocation = "eastus"
+
+    # Create resource group if it doesn't exist
+    $rgExists = $null
+    try { $rgExists = az group show --name $kvResourceGroup -o json 2>$null | ConvertFrom-Json } catch {}
+    if (-not $rgExists) {
+        Write-Info "Creating resource group: $kvResourceGroup"
+        az group create --name $kvResourceGroup --location $kvLocation --output none
+    }
+
+    # Create Key Vault if it doesn't exist
+    $kvExists = $null
+    try { $kvExists = az keyvault show --name $KeyVaultName -o json 2>$null | ConvertFrom-Json } catch {}
+    if (-not $kvExists) {
+        Write-Info "Creating Key Vault: $KeyVaultName"
+        az keyvault create `
+            --name $KeyVaultName `
+            --resource-group $kvResourceGroup `
+            --location $kvLocation `
+            --enable-rbac-authorization false `
+            --output none
+    } else {
+        Write-Info "Key Vault '$KeyVaultName' already exists."
+    }
+
+    # Store secrets
+    Write-Info "Storing secrets in Key Vault..."
+    az keyvault secret set --vault-name $KeyVaultName --name "AZURE-TENANT-ID" --value $TenantId --output none
+    az keyvault secret set --vault-name $KeyVaultName --name "AZURE-CLIENT-ID" --value $ClientId --output none
+    az keyvault secret set --vault-name $KeyVaultName --name "AZURE-CLIENT-SECRET" --value $ClientSecret --output none
+    az keyvault secret set --vault-name $KeyVaultName --name "AZURE-SUBSCRIPTION-ID" --value $SubscriptionId --output none
+
+    $kvUrl = "https://$KeyVaultName.vault.azure.net/"
+    Write-Info "Secrets stored. Key Vault URL: $kvUrl"
+
+    # Update .env with Key Vault URL
+    $envContent = Get-Content $EnvFile -Raw
+    if ($envContent -match 'KEY_VAULT_URL=') {
+        $envContent = $envContent -replace 'KEY_VAULT_URL=.*', "KEY_VAULT_URL=$kvUrl"
+        [System.IO.File]::WriteAllText($EnvFile, $envContent)
+    } else {
+        Add-Content $EnvFile "`nKEY_VAULT_URL=$kvUrl"
+    }
+    Write-Info "KEY_VAULT_URL written to .env"
+
+    Write-Host ""
+    Write-Host "  Key Vault:   $kvUrl" -ForegroundColor Green
+    Write-Host "  Secrets:     AZURE-TENANT-ID, AZURE-CLIENT-ID, AZURE-CLIENT-SECRET, AZURE-SUBSCRIPTION-ID" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  Pipeline setup:" -ForegroundColor Yellow
+    Write-Host "    1. Create a workspace identity: Workspace Settings > Workspace identity > + Workspace identity"
+    Write-Host "    2. Grant the workspace identity 'Key Vault Secrets User' role on the vault"
+    Write-Host "    3. Upload .env to Lakehouse Files (KEY_VAULT_URL is set)"
+    Write-Host "    4. Notebooks will auto-detect Key Vault and pull secrets at runtime"
+    Write-Host ""
+}

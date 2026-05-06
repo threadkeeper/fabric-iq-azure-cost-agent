@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "AzureBillingDashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e0852d81-dc6b-417e-8037-a16a4245dd25"
+  }
+}
