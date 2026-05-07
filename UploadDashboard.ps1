@@ -1,8 +1,8 @@
 #
-# SetupDashboard.ps1 - Configure Power BI project with Lakehouse connection from .env
+# UploadDashboard.ps1 - Configure Power BI project with Lakehouse connection from .env
 #
 # Usage:
-#   .\SetupDashboard.ps1
+#   .\UploadDashboard.ps1
 #
 # Reads LAKEHOUSE_SQL_ENDPOINT and LAKEHOUSE_DATABASE from .env,
 # updates the semantic model parameters in model.bim.
@@ -65,7 +65,7 @@ if (Test-Path $EnvFile) {
     }
 } else {
     @"
-# Fabric Lakehouse connection (added by SetupDashboard.ps1)
+# Fabric Lakehouse connection (added by UploadDashboard.ps1)
 LAKEHOUSE_SQL_ENDPOINT=$endpoint
 LAKEHOUSE_DATABASE=$database
 "@ | Set-Content $EnvFile -Encoding UTF8

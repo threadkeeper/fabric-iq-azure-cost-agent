@@ -93,7 +93,7 @@ COST_LOOKBACK_DAYS=7
 # When set, notebooks pull secrets from Key Vault instead of .env
 KEY_VAULT_URL=
 
-# Fabric Lakehouse connection (used by SetupDashboard.ps1)
+# Fabric Lakehouse connection (used by UploadDashboard.ps1)
 # Find your SQL endpoint: Fabric Portal -> Lakehouse -> Settings -> SQL analytics endpoint -> Server
 LAKEHOUSE_SQL_ENDPOINT=
 LAKEHOUSE_DATABASE=CostManagementLakehouse
@@ -186,7 +186,7 @@ ONTOLOGY_DISPLAY_NAME=CostManagementOntology
 # When set, notebooks pull secrets from Key Vault instead of .env
 KEY_VAULT_URL=
 
-# Fabric Lakehouse connection (used by SetupDashboard.ps1)
+# Fabric Lakehouse connection (used by UploadDashboard.ps1)
 # Find your SQL endpoint: Fabric Portal -> Lakehouse -> Settings -> SQL analytics endpoint -> Server
 LAKEHOUSE_SQL_ENDPOINT=
 LAKEHOUSE_DATABASE=CostManagementLakehouse

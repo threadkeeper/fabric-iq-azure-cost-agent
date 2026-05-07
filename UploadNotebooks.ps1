@@ -269,6 +269,8 @@ $assetsToUpload = @(
     @{ Local = "dashboard\AzureBillingDashboard.Report\definition.pbir";        Remote = "Files/dashboard/AzureBillingDashboard.Report/definition.pbir" }
     # data agent instructions
     @{ Local = "data_agent_instructions.md"; Remote = "Files/data_agent_instructions.md" }
+    # environment config
+    @{ Local = ".env"; Remote = "Files/.env" }
 )
 
 foreach ($asset in $assetsToUpload) {

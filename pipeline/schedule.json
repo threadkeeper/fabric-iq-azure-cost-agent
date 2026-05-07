@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "configuration": {
+    "startDateTime": "2026-05-07T00:00:00",
+    "endDateTime": "2036-12-31T23:59:00",
+    "localTimeZoneId": "UTC",
+    "type": "Cron",
+    "interval": 360
+  }
+}
