@@ -179,7 +179,7 @@ AZURE_CLIENT_SECRET=$ClientSecret
 # Service Principal display name (for reference)
 AZURE_SPN_NAME=$AppName
 
-# Ontology display name (optional -- used by 02_create_cost_ontology notebook)
+# Ontology display name (optional -- used by 03_create_cost_ontology notebook)
 ONTOLOGY_DISPLAY_NAME=CostManagementOntology
 
 # Azure Key Vault (for pipeline auth - set by GetKeys.ps1 -KeyVaultName)
@@ -215,7 +215,7 @@ Write-Host "  Next steps:"
 Write-Host "    1. Upload notebooks to your Fabric workspace"
 Write-Host "    2. Upload .env to Lakehouse Files (or set env vars)"
 Write-Host "    3. Run 01_download_cost_data.ipynb"
-Write-Host "    4. Run 02_create_cost_ontology.ipynb"
+Write-Host "    4. Run 03_create_cost_ontology.ipynb"
 Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 

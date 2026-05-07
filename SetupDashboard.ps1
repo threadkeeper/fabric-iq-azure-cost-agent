@@ -1,4 +1,4 @@
-﻿#
+#
 # SetupDashboard.ps1 - Configure Power BI project with Lakehouse connection from .env
 #
 # Usage:
@@ -20,11 +20,11 @@ $endpoint = $null
 $database = $null
 
 if (Test-Path $EnvFile) {
-    Get-Content $EnvFile | ForEach-Object {
-        if ($_ -match '^\s*LAKEHOUSE_SQL_ENDPOINT\s*=\s*(.+?)\s*$') {
+    foreach ($line in Get-Content $EnvFile) {
+        if ($line -match '^\s*LAKEHOUSE_SQL_ENDPOINT\s*=\s*(.+?)\s*$') {
             $endpoint = $Matches[1]
         }
-        if ($_ -match '^\s*LAKEHOUSE_DATABASE\s*=\s*(.+?)\s*$') {
+        if ($line -match '^\s*LAKEHOUSE_DATABASE\s*=\s*(.+?)\s*$') {
             $database = $Matches[1]
         }
     }
@@ -80,18 +80,41 @@ if (-not (Test-Path $ModelFile)) {
 
 $content = Get-Content $ModelFile -Raw
 
-# Replace the endpoint parameter value using regex (preserves JSON formatting)
-$endpointPattern = '("name":\s*"Lakehouse SQL Endpoint"[\s\S]*?"expression":\s*)"[^"]*"\s*(meta\s*\[IsParameterQuery)'
-$endpointReplace = "`$1`"$endpoint`" `$2"
-$newContent = [regex]::Replace($content, $endpointPattern, $endpointReplace)
+# Replace the parameter expressions. The expression values are JSON strings that
+# contain escaped quotes, so build valid JSON string literals before replacing.
+function ConvertTo-JsonStringLiteral {
+    param([Parameter(Mandatory = $true)][string]$Value)
+    return ($Value | ConvertTo-Json -Compress)
+}
 
-# Replace the database parameter value using regex
-$dbPattern = '("name":\s*"Lakehouse Database"[\s\S]*?"expression":\s*)"[^"]*"\s*(meta\s*\[IsParameterQuery)'
-$dbReplace = "`$1`"$database`" `$2"
-$newContent = [regex]::Replace($newContent, $dbPattern, $dbReplace)
+function Set-ModelParameterExpression {
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$ParameterName,
+        [Parameter(Mandatory = $true)][string]$Expression
+    )
+
+    $pattern = '("name":\s*"' + [regex]::Escape($ParameterName) + '"[\s\S]*?"expression":\s*)"(?:\\.|[^"\\])*"'
+    $replacement = "`$1" + (ConvertTo-JsonStringLiteral $Expression)
+    return [regex]::Replace($Content, $pattern, $replacement)
+}
+
+$endpointExpression = "`"$endpoint`" meta [IsParameterQuery=true, Type=`"Text`", IsParameterQueryRequired=true]"
+$databaseExpression = "`"$database`" meta [IsParameterQuery=true, Type=`"Text`", IsParameterQueryRequired=true]"
+
+$newContent = Set-ModelParameterExpression -Content $content -ParameterName "Lakehouse SQL Endpoint" -Expression $endpointExpression
+$newContent = Set-ModelParameterExpression -Content $newContent -ParameterName "Lakehouse Database" -Expression $databaseExpression
 
 if ($content -eq $newContent) {
-    Write-Host "[WARN] No parameter expressions were updated - check model.bim format" -ForegroundColor Yellow
+    $model = $newContent | ConvertFrom-Json
+    $configuredEndpoint = ($model.model.expressions | Where-Object { $_.name -eq "Lakehouse SQL Endpoint" }).expression
+    $configuredDatabase = ($model.model.expressions | Where-Object { $_.name -eq "Lakehouse Database" }).expression
+
+    if (($configuredEndpoint -eq $endpointExpression) -and ($configuredDatabase -eq $databaseExpression)) {
+        Write-Host "[INFO] Lakehouse parameters are already configured" -ForegroundColor Green
+    } else {
+        Write-Host "[WARN] No parameter expressions were updated - check model.bim format" -ForegroundColor Yellow
+    }
 } else {
     [System.IO.File]::WriteAllText($ModelFile, $newContent, [System.Text.UTF8Encoding]::new($false))
     Write-Host "[INFO] Set Lakehouse SQL Endpoint: $endpoint" -ForegroundColor Green

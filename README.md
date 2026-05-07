@@ -1,12 +1,260 @@
 # Azure Cost Management Ontology for Microsoft Fabric
 
+Build a Fabric Ontology, Power BI dashboard, and AI Data Agent from Azure cost data — per resource, per day, fully automated.
+
+## What This Does
+
+Three local scripts + five Fabric notebooks handle everything:
+
+| Step | Where | Script / Notebook | What it Does |
+|------|-------|-------------------|-------------|
+| 1 | Local | `GetKeys.ps1` | Creates SPN, assigns Cost Management Reader, writes `.env`, optionally provisions Key Vault |
+| 2 | Local | `SetupDashboard.ps1` | Injects Lakehouse connection into the local PBI project (for local dev only) |
+| 3 | Local | `UploadNotebooks.ps1` | Uploads all notebooks + dashboard assets to Fabric with Lakehouse pre-attached |
+| 4 | Fabric | `01_download_cost_data` | Downloads cost CSVs in ≤30-day chunks, writes 6 Delta tables |
+| 5 | Fabric | `02_deploy_dashboard` | Patches connection string, deploys Semantic Model + Report, saves IDs to `.env` |
+| 6 | Fabric | `03_create_cost_ontology` | Builds ontology + graph DB via Fabric REST API |
+| 7 | Fabric | `04_create_data_agent` | Creates/updates Data Agent with ontology + dashboard link |
+| — | Fabric | `00_clear_cost_deltafiles` | Drops all tables + staging CSVs (on-demand utility) |
+
+---
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| [GetKeys.ps1](GetKeys.ps1) | Creates SPN, assigns roles, writes `.env` (optionally provisions Key Vault) |
+| [SetupDashboard.ps1](SetupDashboard.ps1) | Injects Lakehouse connection into local PBIP (for Power BI Desktop dev) |
+| [UploadNotebooks.ps1](UploadNotebooks.ps1) | Uploads notebooks + dashboard files to Fabric Lakehouse with Lakehouse pre-attached |
+| [notebooks/](notebooks/) | All Fabric notebooks (00–04) |
+| [dashboard/](dashboard/) | Power BI project (PBIP) — source-of-truth dashboard definition |
+| [data_agent_instructions.md](data_agent_instructions.md) | AI instructions for the Data Agent |
+| [cost-management-ontology.rdf](cost-management-ontology.rdf) | RDF file for Ontology Playground (optional) |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Azure CLI** (`az`) installed and logged in
+- **PowerShell 5.1+**
+- A **Microsoft Fabric** workspace with a capacity (trial or paid)
+- A **Lakehouse** in that workspace
+
+### 1. Create Service Principal + `.env` (local)
+
+```powershell
+az login
+.\GetKeys.ps1
+```
+
+This creates `CostManagement-Fabric-SPN`, assigns **Cost Management Reader**, and writes credentials to `.env`.
+
+To store secrets in Key Vault (recommended for shared/pipeline use):
+
+```powershell
+.\GetKeys.ps1 -KeyVaultName "kv-costmgmt-yourname"
+```
+
+### 2. Configure Lakehouse connection
+
+Edit `.env` and set your Lakehouse details:
+
+```ini
+LAKEHOUSE_SQL_ENDPOINT=your-endpoint.datawarehouse.fabric.microsoft.com
+LAKEHOUSE_DATABASE=your-lakehouse-name
+```
+
+> **Finding your Lakehouse SQL endpoint:** Fabric portal → your workspace → open Lakehouse → Settings → SQL analytics endpoint → copy the **Server** value.
+
+### 3. Upload everything to Fabric (local)
+
+```powershell
+.\UploadNotebooks.ps1
+```
+
+This single command:
+- Uploads all 5 notebooks to the `notebooks` folder in your workspace
+- Injects Lakehouse connection metadata so notebooks are ready to run (no manual attachment needed)
+- Uploads the `dashboard/` folder and `data_agent_instructions.md` to Lakehouse Files
+
+### 4. Run notebooks in Fabric
+
+Open each notebook in the Fabric portal and click **Run all**, in order:
+
+| Order | Notebook | Time | What Happens |
+|-------|----------|------|-------------|
+| 1 | `01_download_cost_data` | ~5 min | Downloads cost data, writes 6 Delta tables |
+| 2 | `02_deploy_dashboard` | ~1 min | Deploys PBI Semantic Model + Report, saves report ID to `.env` |
+| 3 | `03_create_cost_ontology` | ~10 min | Creates ontology + graph database |
+| 4 | `04_create_data_agent` | ~1 min | Creates Data Agent with ontology + dashboard link |
+
+That's it. No manual portal clicks beyond creating the workspace and Lakehouse.
+
+---
+
+## Scheduling (optional)
+
+Create a pipeline that runs the notebooks sequentially on a schedule:
+
+1. In your workspace → **+ New item** → **Data pipeline** → name it `CostManagement-Refresh`
+2. Add 4 **Notebook** activities in sequence: `01` → `02` → `03` → `04`
+3. Connect them with success arrows (green ✓)
+4. Click **Schedule** → Every `6` Hours → **Apply**
+
+> **Key Vault setup for pipelines:** Create a workspace identity (Workspace Settings → Workspace identity), then grant it **Key Vault Secrets User** on your vault. Notebooks auto-detect Key Vault via `KEY_VAULT_URL` in `.env`.
+
+---
+
+## Local Power BI Development (optional)
+
+To edit the dashboard locally in Power BI Desktop:
+
+```powershell
+.\SetupDashboard.ps1
+```
+
+Then open `dashboard/AzureBillingDashboard.pbip` in Power BI Desktop (requires Developer Mode enabled in preview features).
+
+---
+
+## Ontology Design
+
+```
+Subscription ──has_resource_group──▶ ResourceGroup
+ResourceGroup ──contains_resource──▶ Resource
+Resource ──incurs_cost──▶ CostRecord
+CostRecord ──billed_under──▶ MeterCategory
+CostRecord ──consumed_by──▶ Service
+Subscription ──billed_by──▶ CostRecord
+```
+
+### Entity Types
+
+| Entity | Table | Key | Description |
+|--------|-------|-----|-------------|
+| Subscription | `subscription` | subscriptionId | Azure subscription (billing root) |
+| ResourceGroup | `resource_group` | resourceGroupId | Logical container for resources |
+| Resource | `resource` | resourceId | Individual Azure resource (VM, storage, etc.) |
+| CostRecord | `cost_record` | costRecordId | Daily cost per resource (fact table) |
+| MeterCategory | `meter_category` | meterId | Billing meter: category → subcategory → name |
+| Service | `service` | serviceId | Consumed Azure service + charge type |
+
+### Relationships
+
+| Relationship | Source → Target | Meaning |
+|-------------|----------------|---------|
+| `has_resource_group` | Subscription → ResourceGroup | Subscription owns resource groups |
+| `contains_resource` | ResourceGroup → Resource | Resource group contains resources |
+| `incurs_cost` | Resource → CostRecord | Resource generates cost records |
+| `billed_under` | CostRecord → MeterCategory | Cost classified under a billing meter |
+| `consumed_by` | CostRecord → Service | Cost emitted by an Azure service |
+| `billed_by` | Subscription → CostRecord | Direct link for subscription-level aggregation |
+
+---
+
+## Sample Graph Queries
+
+**Total cost by resource group:**
+```gql
+GRAPH CostManagementOntology
+MATCH (s:Subscription)-[:has_resource_group]->(rg:ResourceGroup)
+      -[:contains_resource]->(r:Resource)
+      -[:incurs_cost]->(c:CostRecord)
+RETURN rg.resourceGroupName, SUM(c.preTaxCost) AS totalCost
+ORDER BY totalCost DESC
+```
+
+**Top 10 most expensive resources:**
+```gql
+GRAPH CostManagementOntology
+MATCH (r:Resource)-[:incurs_cost]->(c:CostRecord)
+RETURN r.resourceId, r.resourceType, SUM(c.preTaxCost) AS totalCost
+ORDER BY totalCost DESC
+LIMIT 10
+```
+
+**Cost by meter category:**
+```gql
+GRAPH CostManagementOntology
+MATCH (c:CostRecord)-[:billed_under]->(m:MeterCategory)
+RETURN m.meterCategory, SUM(c.preTaxCost) AS totalCost
+ORDER BY totalCost DESC
+```
+
+**Daily spend trend:**
+```gql
+GRAPH CostManagementOntology
+MATCH (s:Subscription)-[:billed_by]->(c:CostRecord)
+RETURN c.usageDate AS date, SUM(c.preTaxCost) AS dailyCost, c.Currency
+ORDER BY date ASC
+```
+
+---
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────┐
+│  Local Machine                                   │
+│  az login → GetKeys.ps1 → .env                   │
+│  UploadNotebooks.ps1 → notebooks + assets        │
+└────────────────────┬─────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────┐
+│  01_download_cost_data (Fabric)                  │
+│  Cost Details API → CSV → 6 Delta tables         │
+└────────────────────┬─────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────┐
+│  02_deploy_dashboard (Fabric)                    │
+│  Patch connection → Semantic Model + Report      │
+└────────────────────┬─────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────┐
+│  03_create_cost_ontology (Fabric)                │
+│  Tables → Ontology REST API → Graph DB           │
+└────────────────────┬─────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────┐
+│  04_create_data_agent (Fabric)                   │
+│  Ontology + Dashboard link → Data Agent          │
+└──────────────────────────────────────────────────┘
+```
+
+---
+
+## Troubleshooting
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| 429 Too Many Requests | Cost API rate limit | Built-in retry handles this automatically |
+| Tables not found | Notebook 01 hasn't run | Run `01_download_cost_data` first |
+| Ontology not found | Notebook 03 hasn't run | Run `03_create_cost_ontology` first |
+| PBI report not rendering | Missing Lakehouse connection | Check `LAKEHOUSE_SQL_ENDPOINT` and `LAKEHOUSE_DATABASE` in `.env` |
+| Data Agent missing dashboard link | Notebook 02 hasn't run | Run `02_deploy_dashboard` before `04_create_data_agent` |
+
+---
+
+## Security Notes
+
+- **Without Key Vault**: `.env` contains `AZURE_CLIENT_SECRET` in plain text on Lakehouse Files. Acceptable for local dev, not recommended for shared workspaces.
+- **With Key Vault**: Notebooks auto-detect `KEY_VAULT_URL` in `.env` and pull secrets via `mssparkutils.credentials.getSecret()`. The secret never leaves the vault.
+- No secrets are stored in notebooks or committed to the repo.
+# Azure Cost Management Ontology for Microsoft Fabric
+
 Build a Fabric Ontology and graph database from Azure cost data — per resource, per day, automated end to end.
 
 ## What This Does
 
 1. **`GetKeys.ps1`** -- Creates a Service Principal, populates `.env`, optionally provisions Azure Key Vault
 2. **`01_download_cost_data.ipynb`** -- Downloads cost data at **per-resource per-day** granularity and writes Lakehouse tables
-3. **`02_create_cost_ontology.ipynb`** -- Creates the Ontology and graph database via the Fabric REST API
+3. **`03_create_cost_ontology.ipynb`** -- Creates the Ontology and graph database via the Fabric REST API
 
 No pipelines to configure. No portal clicking beyond creating a workspace and Lakehouse.
 
@@ -19,7 +267,7 @@ No pipelines to configure. No portal clicking beyond creating a workspace and La
 | [GetKeys.ps1](GetKeys.ps1) | Creates SPN, assigns Cost Management Reader, writes `.env` (optionally provisions Key Vault) |
 | [SetupDashboard.ps1](SetupDashboard.ps1) | Injects Lakehouse connection into PBI project from `.env` |
 | [notebooks/01_download_cost_data.ipynb](notebooks/01_download_cost_data.ipynb) | Downloads cost CSVs in ≤30-day chunks, writes 6 Delta tables |
-| [notebooks/02_create_cost_ontology.ipynb](notebooks/02_create_cost_ontology.ipynb) | Builds ontology from tables via REST API |
+| [notebooks/03_create_cost_ontology.ipynb](notebooks/03_create_cost_ontology.ipynb) | Builds ontology from tables via REST API |
 | [cost-management-ontology.rdf](cost-management-ontology.rdf) | RDF file for Ontology Playground (optional) |
 | [dashboard/](dashboard/) | Power BI project (PBIP) — source-of-truth dashboard |
 | [.env](.env) | Credentials + config (gitignored). Secrets are optional here when using Key Vault |
@@ -68,7 +316,7 @@ This additionally creates a Key Vault, stores the SPN secrets, and sets `KEY_VAU
 
 ### 4. Run Notebook 2 — Create the Ontology
 
-1. Open `02_create_cost_ontology` in Fabric
+1. Open `03_create_cost_ontology` in Fabric
 2. Attach the same Lakehouse
 3. Click **Save** — same as above, persists the attachment for pipeline runs
 4. Click **Run all**
@@ -111,7 +359,7 @@ Create a pipeline that runs both notebooks sequentially on a schedule.
    - **Notebook**: select `01_download_cost_data`
 4. Drag a second **Notebook** activity onto the canvas
 5. In its **Settings** tab:
-   - **Notebook**: select `02_create_cost_ontology`
+   - **Notebook**: select `03_create_cost_ontology`
 6. **Connect them**: drag the green ✓ arrow from the first activity to the second (this ensures notebook 2 only runs after notebook 1 succeeds)
 7. Click **Save**
 8. Click **Schedule** (top toolbar):
@@ -349,7 +597,7 @@ When the Data Agent returns cost figures, cross-reference against this dashboard
                      │
                      ▼
 ┌──────────────────────────────────────────────────┐
-│  02_create_cost_ontology.ipynb (Fabric)          │
+│  03_create_cost_ontology.ipynb (Fabric)          │
 │  Auth: Fabric workspace identity (no SPN)        │
 │  Detect tables → Build entities/bindings →       │
 │  POST to Ontology REST API → Graph DB            │

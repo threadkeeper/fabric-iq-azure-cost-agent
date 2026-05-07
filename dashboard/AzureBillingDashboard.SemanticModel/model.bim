@@ -34,7 +34,7 @@
             "value": "Text"
           }
         ],
-        "expression": "\"YOUR_LAKEHOUSE_SQL_ENDPOINT.datawarehouse.fabric.microsoft.com\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]",
+        "expression": "\"fw3a7dnuunnujpowpfko6lfyc4-enh443b3srkexk2pzltnaqnnaa.datawarehouse.fabric.microsoft.com\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]",
         "kind": "m",
         "lineageTag": "e1000001-0000-4000-a000-000000000001"
       },
@@ -50,7 +50,7 @@
             "value": "Text"
           }
         ],
-        "expression": "\"CostManagementLakehouse\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]",
+        "expression": "\"dbAzureCostLakeHouse\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]",
         "kind": "m",
         "lineageTag": "e1000002-0000-4000-a000-000000000002"
       }
@@ -367,6 +367,19 @@
             "expression": "SUM(cost_record[preTaxCost])",
             "formatString": "$#,##0.00",
             "lineageTag": "m4100001-0000-4000-a000-000000000001"
+          },
+          {
+            "name": "Forecast Cost",
+            "description": "Simple forecast header value used by the Azure cost dashboard page.",
+            "expression": "[Total Cost] * 1.0375",
+            "formatString": "$#,##0.00",
+            "lineageTag": "m4100002-0000-4000-a000-000000000002"
+          },
+          {
+            "name": "Budget Display",
+            "description": "Budget placeholder header value used by the Azure cost dashboard page.",
+            "expression": "\"--\"",
+            "lineageTag": "m4100003-0000-4000-a000-000000000003"
           }
         ],
         "partitions": [
