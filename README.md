@@ -1,5 +1,10 @@
 # Azure Cost Management Ontology for Microsoft Fabric
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Built%20with-GitHub%20Copilot-8957e5?style=for-the-badge&logo=githubcopilot&logoColor=white" alt="GitHub Copilot" />
+  <img src="https://img.shields.io/badge/Powered%20by-Claude%20Opus%204.6-d97706?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude" />
+</p>
+
 Build a Fabric Ontology, Power BI dashboard, and AI Data Agent from Azure cost data — per resource, per day, fully automated.
 
 ## What This Does
