@@ -24,10 +24,11 @@ Three local scripts + five Fabric notebooks handle everything:
 | 1 | Local | `GetKeys.ps1` | Creates SPN, assigns Cost Management Reader, writes `.env`, optionally provisions Key Vault |
 | 2 | Local | `SetDashboardConnectionString.ps1` | Injects Lakehouse connection into the local PBI project (for local dev only) |
 | 3 | Local | `UploadNotebooks.ps1` | Uploads all notebooks + dashboard assets to Fabric with Lakehouse pre-attached |
-| 4 | Fabric | `01_download_cost_data` | Downloads cost CSVs in <=30-day chunks, writes 6 Delta tables |
-| 5 | Fabric | `02_deploy_dashboard` | Patches connection string, deploys Semantic Model + Report, saves IDs to `.env` |
-| 6 | Fabric | `03_create_cost_ontology` | Builds ontology + graph DB via Fabric REST API |
-| 7 | Fabric | `04_create_data_agent` | Creates/updates Data Agent with ontology + dashboard link |
+| 4 | Local | `UploadPipeline.ps1` | Deploys the scheduling pipeline + schedule to Fabric (optional) |
+| 5 | Fabric | `01_download_cost_data` | Downloads cost CSVs in <=30-day chunks, writes 6 Delta tables |
+| 6 | Fabric | `02_deploy_dashboard` | Patches connection string, deploys Semantic Model + Report, saves IDs to `.env` |
+| 7 | Fabric | `03_create_cost_ontology` | Builds ontology + graph DB via Fabric REST API |
+| 8 | Fabric | `04_create_data_agent` | Creates/updates Data Agent with ontology + dashboard link |
 | -- | Fabric | `00_clear_cost_deltafiles` | Drops all tables + staging CSVs (on-demand utility) |
 
 ---
@@ -148,9 +149,7 @@ After `02_deploy_dashboard` runs for the first time, the Semantic Model needs an
 
 This only needs to be done once. Subsequent refreshes reuse the saved connection.
 
----
-
-## Scheduling (optional)
+### 6. Deploy scheduling pipeline (optional)
 
 Deploy the `pipeline-azurecost` pipeline (which runs notebooks `01` -> `03` -> `04` in sequence) and its schedule:
 
