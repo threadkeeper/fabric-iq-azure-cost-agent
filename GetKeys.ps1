@@ -1,4 +1,4 @@
-#
+﻿#
 # GetKeys.ps1 -- Create a Service Principal for Azure Cost Management and populate .env
 #
 # Prerequisites:
@@ -24,18 +24,18 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# ─── Configuration ────────────────────────────────────────────────────────────
+# â”€â”€â”€ Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $AppName     = "CostManagement-Fabric-SPN"
 $Role        = "Cost Management Reader"
 $EnvFile     = Join-Path $PSScriptRoot ".env"
 $SecretYears = 2
 
-# ─── Helper functions ─────────────────────────────────────────────────────────
+# â”€â”€â”€ Helper functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Write-Info  { param([string]$Message) Write-Host "[INFO] $Message" -ForegroundColor Green }
 function Write-Warn  { param([string]$Message) Write-Host "[WARN] $Message" -ForegroundColor Yellow }
 function Write-Err   { param([string]$Message) Write-Host "[ERROR] $Message" -ForegroundColor Red }
 
-# ─── Pre-flight checks ───────────────────────────────────────────────────────
+# â”€â”€â”€ Pre-flight checks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $azCmd = Get-Command az -ErrorAction SilentlyContinue
 if (-not $azCmd) {
     Write-Err "Azure CLI (az) is not installed. Install from https://aka.ms/install-azure-cli"
@@ -52,7 +52,7 @@ try {
 
 Write-Info "Azure CLI is installed and authenticated."
 
-# ─── Get current subscription info ───────────────────────────────────────────
+# â”€â”€â”€ Get current subscription info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $accountJson = az account show -o json | ConvertFrom-Json
 $SubscriptionId   = $accountJson.id
 $SubscriptionName = $accountJson.name
@@ -61,7 +61,7 @@ $TenantId         = $accountJson.tenantId
 Write-Info "Current subscription: $SubscriptionName ($SubscriptionId)"
 Write-Info "Tenant ID: $TenantId"
 
-# ─── Step 1: Create .env file if it doesn't exist ────────────────────────────
+# â”€â”€â”€ Step 1: Create .env file if it doesn't exist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if (-not (Test-Path $EnvFile)) {
     Write-Info "Creating $EnvFile file..."
     $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -93,7 +93,7 @@ COST_LOOKBACK_DAYS=7
 # When set, notebooks pull secrets from Key Vault instead of .env
 KEY_VAULT_URL=
 
-# Fabric Lakehouse connection (used by UploadDashboard.ps1)
+# Fabric Lakehouse connection (used by SetDashboardConnectionString.ps1)
 # Find your SQL endpoint: Fabric Portal -> Lakehouse -> Settings -> SQL analytics endpoint -> Server
 LAKEHOUSE_SQL_ENDPOINT=
 LAKEHOUSE_DATABASE=CostManagementLakehouse
@@ -103,7 +103,7 @@ LAKEHOUSE_DATABASE=CostManagementLakehouse
     Write-Info "$EnvFile already exists."
 }
 
-# ─── Step 2: Check if Service Principal already exists ────────────────────────
+# â”€â”€â”€ Step 2: Check if Service Principal already exists â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Write-Info "Checking for existing service principal '$AppName'..."
 
 $existingApps = az ad app list --display-name $AppName -o json 2>$null | ConvertFrom-Json
@@ -123,7 +123,7 @@ if ($existingApps -and $existingApps.Count -gt 0) {
         exit 1
     }
 } else {
-    # ─── Step 3: Create the Service Principal ─────────────────────────────────
+    # â”€â”€â”€ Step 3: Create the Service Principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Write-Info "Creating service principal '$AppName'..."
 
     $spJson = az ad sp create-for-rbac --name $AppName --years $SecretYears -o json | ConvertFrom-Json
@@ -138,7 +138,7 @@ if ($existingApps -and $existingApps.Count -gt 0) {
     Write-Info "Service principal created: $ClientId"
 }
 
-# ─── Step 4: Assign Cost Management Reader role ──────────────────────────────
+# â”€â”€â”€ Step 4: Assign Cost Management Reader role â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Write-Info "Checking role assignment for '$Role' on subscription..."
 
 $scope = "/subscriptions/$SubscriptionId"
@@ -156,7 +156,7 @@ if ($existingRole -and $existingRole.Count -gt 0) {
     Write-Info "Role assigned successfully."
 }
 
-# ─── Step 5: Update the .env file ────────────────────────────────────────────
+# â”€â”€â”€ Step 5: Update the .env file â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Write-Info "Updating $EnvFile with credentials..."
 
 $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -186,7 +186,7 @@ ONTOLOGY_DISPLAY_NAME=CostManagementOntology
 # When set, notebooks pull secrets from Key Vault instead of .env
 KEY_VAULT_URL=
 
-# Fabric Lakehouse connection (used by UploadDashboard.ps1)
+# Fabric Lakehouse connection (used by SetDashboardConnectionString.ps1)
 # Find your SQL endpoint: Fabric Portal -> Lakehouse -> Settings -> SQL analytics endpoint -> Server
 LAKEHOUSE_SQL_ENDPOINT=
 LAKEHOUSE_DATABASE=CostManagementLakehouse
@@ -194,13 +194,13 @@ LAKEHOUSE_DATABASE=CostManagementLakehouse
 
 Write-Info "$EnvFile updated successfully."
 
-# ─── Summary ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 $secretPreview = $ClientSecret.Substring(0, [Math]::Min(8, $ClientSecret.Length)) + "********************************"
 
 Write-Host ""
-Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Cyan
 Write-Host "  Setup Complete" -ForegroundColor Cyan
-Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Subscription:    $SubscriptionName"
 Write-Host "  Subscription ID: $SubscriptionId"
@@ -217,9 +217,9 @@ Write-Host "    2. Upload .env to Lakehouse Files (or set env vars)"
 Write-Host "    3. Run 01_download_cost_data.ipynb"
 Write-Host "    4. Run 03_create_cost_ontology.ipynb"
 Write-Host ""
-Write-Host "════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Cyan
 
-# ─── Step 6 (Optional): Create Key Vault and store secrets ───────────────────
+# â”€â”€â”€ Step 6 (Optional): Create Key Vault and store secrets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if ($KeyVaultName) {
     Write-Host ""
     Write-Info "Setting up Azure Key Vault: $KeyVaultName"
