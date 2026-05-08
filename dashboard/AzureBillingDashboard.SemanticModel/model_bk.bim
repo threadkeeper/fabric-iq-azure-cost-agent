@@ -498,10 +498,9 @@
                 "    data = Source{[Schema=\"dbo\",Item=\"service\"]}[Data],",
                 "    SafeLower = (x) => if x = null then null else Text.Lower(x),",
                 "    Lower = Table.TransformColumns(data, {{\"serviceId\", SafeLower, type text}}),",
-                "    Grouped = Table.Group(Lower, {\"serviceId\"}, {{\"serviceName\", each List.Max([serviceName]), type text}, {\"chargeType\", each List.Max([chargeType]), type text}}),",
-                "    StripPrefix = Table.TransformColumns(Grouped, {{\"serviceName\", each if Text.StartsWith(_, \"Microsoft.\", Comparer.OrdinalIgnoreCase) then Text.Range(_, 10) else _, type text}})",
+                "    Grouped = Table.Group(Lower, {\"serviceId\"}, {{\"serviceName\", each List.Max([serviceName]), type text}, {\"chargeType\", each List.Max([chargeType]), type text}})",
                 "in",
-                "    StripPrefix"
+                "    Grouped"
               ],
               "type": "m"
             }
