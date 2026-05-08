@@ -7,6 +7,14 @@
 
 Build a Fabric Ontology, Power BI dashboard, and AI Data Agent from Azure cost data — per resource, per day, fully automated.
 
+<p align="center">
+  <b>Azure Cost Power BI Dashboard</b><br/>
+  <img src="dashboard/AzureCostDashboard.PNG" alt="Azure Cost Dashboard" width="600" style="border: 3px solid #8957e5; border-radius: 8px; margin-bottom: 12px;" />
+  <br/><br/>
+  <b>Azure Cost Data Agent</b><br/>
+  <img src="dashboard/AzureDataAgent.PNG" alt="Azure Data Agent" width="600" style="border: 3px solid #d97706; border-radius: 8px;" />
+</p>
+
 ## What This Does
 
 Three local scripts + five Fabric notebooks handle everything:
@@ -179,6 +187,25 @@ Create a pipeline that runs the notebooks sequentially on a schedule:
 4. Click **Schedule** → Every `6` Hours → **Apply**
 
 > **Key Vault setup for pipelines:** Create a workspace identity (Workspace Settings → Workspace identity), then grant it **Key Vault Secrets User** on your vault. Notebooks auto-detect Key Vault via `KEY_VAULT_URL` in `.env`.
+
+---
+
+## Publish Data Agent to Teams (optional)
+
+After the pipeline has run at least once (so the Data Agent exists in your workspace), you can publish it to Microsoft Teams via the M365 Copilot Agent Store:
+
+1. Open your **Data Agent** in the Fabric portal
+2. Click **Publish**, then select **Publish to Agent Store**
+3. In Teams, users type `@` in the Copilot chat to see available agents and select yours
+4. Ensure users have **read access** to the Fabric Data Agent and the necessary permissions for all underlying data sources
+
+> **Note:** It may take a few seconds for the agent to appear in the Agent Store. If it doesn't show up immediately, click the **Expand Navigation** button on the left side of the window to refresh the list. If agents still don't appear, ask your Microsoft 365 admin to confirm that [Copilot extensibility is enabled](https://learn.microsoft.com/microsoft-365/admin/manage/manage-plugins-for-copilot-in-integrated-apps).
+
+<p align="center">
+  <img src="dashboard/FabricAdminSetting.PNG" alt="Fabric Admin Settings" width="600" style="border: 3px solid #8957e5; border-radius: 8px; margin-bottom: 12px;" />
+  <br/>
+  <img src="dashboard/FabricAdminSetting2.PNG" alt="Fabric Admin Settings 2" width="600" style="border: 3px solid #d97706; border-radius: 8px;" />
+</p>
 
 ---
 
