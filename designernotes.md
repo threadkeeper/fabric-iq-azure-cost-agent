@@ -110,6 +110,7 @@ These notes compare the current Power BI dashboard screenshot (`PowerBICostDashb
 4. Set the y-axis maximum to a fixed or dynamically padded value close to Azure’s scale, e.g. max daily spend rounded up to the next `$20` increment.
 5. Use lighter horizontal gridlines.
 6. Reduce chart title prominence or remove the Power BI-style title so the visual looks closer to Azure.
+7. Sort stacked segments within each bar from largest total cost on the bottom to smallest on the top, matching Azure Cost Management's stacking order.
 
 ## 7. Legend placement and color palette differ
 
