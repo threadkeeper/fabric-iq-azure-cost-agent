@@ -1,5 +1,5 @@
 {
-  "config": "{\"version\":\"5.66\",\"themeCollection\":{\"baseTheme\":{\"name\":\"CY24SU06\",\"type\":\"SharedResources\",\"version\":{\"visual\":\"2.8.0\",\"report\":\"3.2.0\",\"page\":\"2.3.1\"}}},\"activeSectionIndex\":0,\"defaultDrillFilterOtherVisuals\":true,\"linguisticSchemaSyncVersion\":2,\"settings\":{\"useStylableVisualContainerHeader\":true,\"exportDataMode\":1,\"useEnhancedTooltips\":false},\"objects\":{\"outspacePane\":[{\"properties\":{\"expanded\":{\"expr\":{\"Literal\":{\"Value\":\"false\"}}}}}]}}",
+  "config": "{\"version\":\"5.66\",\"themeCollection\":{\"baseTheme\":{\"name\":\"CY24SU06\",\"type\":\"SharedResources\",\"version\":{\"visual\":\"2.8.0\",\"report\":\"3.2.0\",\"page\":\"2.3.1\"}}},\"activeSectionIndex\":0,\"defaultDrillFilterOtherVisuals\":true,\"linguisticSchemaSyncVersion\":2,\"settings\":{\"useStylableVisualContainerHeader\":true,\"exportDataMode\":1,\"useEnhancedTooltips\":false},\"objects\":{\"outspacePane\":[{\"properties\":{\"expanded\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}}}}]}}",
   "layoutOptimization": 0,
   "publicCustomVisuals": [],
   "sections": [
@@ -8,83 +8,83 @@
       "displayName": "Dashboard",
       "displayOption": 1,
       "filters": "[]",
-      "height": 720.00,
+      "height": 910.00,
       "name": "10e18cba18d040456c1a",
       "visualContainers": [
         {
-          "config": "{\"name\":\"ab4d13f603417e453a79\",\"layouts\":[{\"id\":0,\"position\":{\"x\":30,\"y\":155,\"z\":0,\"width\":1220,\"height\":445,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"columnChart\",\"projections\":{\"Y\":[{\"queryRef\":\"cost_record.Total Cost\"}],\"Category\":[{\"queryRef\":\"cost_record.usageDate\",\"active\":true}],\"Series\":[{\"queryRef\":\"service.serviceName\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0},{\"Name\":\"s\",\"Entity\":\"service\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Total Cost\"},\"Name\":\"cost_record.Total Cost\",\"NativeReferenceName\":\"Total Cost\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"},\"Name\":\"cost_record.usageDate\",\"NativeReferenceName\":\"usageDate\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s\"}},\"Property\":\"serviceName\"},\"Name\":\"service.serviceName\",\"NativeReferenceName\":\"serviceName\"}],\"OrderBy\":[{\"Direction\":1,\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"}}}]},\"drillFilterOtherVisuals\":true,\"hasDefaultSort\":true,\"objects\":{\"legend\":[{\"properties\":{\"position\":{\"expr\":{\"Literal\":{\"Value\":\"'Right'\"}}}}}]}}}",
+          "config": "{\"name\":\"ab4d13f603417e453a79\",\"layouts\":[{\"id\":0,\"position\":{\"x\":14.589665653495441,\"y\":237.08206686930092,\"z\":0,\"width\":1570.820668693009,\"height\":652.887537993921,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"columnChart\",\"projections\":{\"Y\":[{\"queryRef\":\"cost_record.Total Cost\"}],\"Category\":[{\"queryRef\":\"cost_record.usageDate\",\"active\":true}],\"Series\":[{\"queryRef\":\"service.serviceName\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0},{\"Name\":\"s\",\"Entity\":\"service\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Total Cost\"},\"Name\":\"cost_record.Total Cost\",\"NativeReferenceName\":\"Total Cost\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"},\"Name\":\"cost_record.usageDate\",\"NativeReferenceName\":\"usageDate\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s\"}},\"Property\":\"serviceName\"},\"Name\":\"service.serviceName\",\"NativeReferenceName\":\"serviceName\"}],\"OrderBy\":[{\"Direction\":1,\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"}}}]},\"drillFilterOtherVisuals\":true,\"hasDefaultSort\":true,\"objects\":{\"legend\":[{\"properties\":{\"position\":{\"expr\":{\"Literal\":{\"Value\":\"'Right'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 445.00,
-          "width": 1220.00,
-          "x": 30.00,
-          "y": 155.00,
+          "height": 652.89,
+          "width": 1570.82,
+          "x": 14.59,
+          "y": 237.08,
           "z": 0.00
         },
         {
-          "config": "{\"name\":\"p1_actualCostCard\",\"layouts\":[{\"id\":0,\"position\":{\"x\":15,\"y\":65,\"z\":1000,\"width\":180,\"height\":75,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.Total Cost\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Total Cost\"},\"Name\":\"cost_record.Total Cost\"}]},\"drillFilterOtherVisuals\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'ACTUAL COST (USD)'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_actualCostCard\",\"layouts\":[{\"id\":0,\"position\":{\"x\":14.589665653495441,\"y\":110.63829787234043,\"z\":1000,\"width\":179.93920972644378,\"height\":98.48024316109422,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.Total Cost\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Total Cost\"},\"Name\":\"cost_record.Total Cost\"}]},\"drillFilterOtherVisuals\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'ACTUAL COST (USD)'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 75.00,
-          "width": 180.00,
-          "x": 15.00,
-          "y": 65.00,
+          "height": 98.48,
+          "width": 179.94,
+          "x": 14.59,
+          "y": 110.64,
           "z": 1000.00
         },
         {
-          "config": "{\"name\":\"p1_budgetCard\",\"layouts\":[{\"id\":0,\"position\":{\"x\":395,\"y\":65,\"z\":3000,\"width\":160,\"height\":75,\"tabOrder\":2200}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.Budget Display\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Budget Display\"},\"Name\":\"cost_record.Budget Display\"}]},\"drillFilterOtherVisuals\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'BUDGET: NONE'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_budgetCard\",\"layouts\":[{\"id\":0,\"position\":{\"x\":483.8905775075988,\"y\":110.63829787234043,\"z\":3000,\"width\":232.21884498480242,\"height\":98.48024316109422,\"tabOrder\":2200}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.Budget Display\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Budget Display\"},\"Name\":\"cost_record.Budget Display\"}]},\"drillFilterOtherVisuals\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'BUDGET: NONE'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 75.00,
-          "width": 160.00,
-          "x": 395.00,
-          "y": 65.00,
+          "height": 98.48,
+          "width": 232.22,
+          "x": 483.89,
+          "y": 110.64,
           "z": 3000.00
         },
         {
-          "config": "{\"name\":\"p1_dateSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":15,\"y\":8,\"z\":4000,\"width\":155,\"height\":45,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.usageDate\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"},\"Name\":\"cost_record.usageDate\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"startDate\":{\"expr\":{\"Literal\":{\"Value\":\"datetime'2026-04-07T00:00:00'\"}}},\"endDate\":{\"expr\":{\"Literal\":{\"Value\":\"datetime'2026-05-06T00:00:00'\"}}},\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Between'\"}}}}}],\"general\":[{\"properties\":{\"filter\":{\"filter\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Where\":[{\"Condition\":{\"And\":{\"Left\":{\"Comparison\":{\"ComparisonKind\":2,\"Left\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"}},\"Right\":{\"Literal\":{\"Value\":\"datetime'2026-04-07T00:00:00'\"}}}},\"Right\":{\"Comparison\":{\"ComparisonKind\":3,\"Left\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"}},\"Right\":{\"Literal\":{\"Value\":\"datetime'2026-05-07T00:00:00'\"}}}}}}}]}}}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"false\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Date Period'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_dateSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":14.589665653495441,\"y\":14.589665653495441,\"z\":4000,\"width\":179.93920972644378,\"height\":96.04863221884499,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.usageDate\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"},\"Name\":\"cost_record.usageDate\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"startDate\":{\"expr\":{\"Literal\":{\"Value\":\"datetime'2026-04-07T00:00:00'\"}}},\"endDate\":{\"expr\":{\"Literal\":{\"Value\":\"datetime'2026-05-06T00:00:00'\"}}},\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Between'\"}}}}}],\"general\":[{\"properties\":{\"filter\":{\"filter\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Where\":[{\"Condition\":{\"And\":{\"Left\":{\"Comparison\":{\"ComparisonKind\":2,\"Left\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"}},\"Right\":{\"Literal\":{\"Value\":\"datetime'2026-04-07T00:00:00'\"}}}},\"Right\":{\"Comparison\":{\"ComparisonKind\":3,\"Left\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"usageDate\"}},\"Right\":{\"Literal\":{\"Value\":\"datetime'2026-05-07T00:00:00'\"}}}}}}}]}}}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"false\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Date Period'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 45.00,
-          "width": 155.00,
-          "x": 15.00,
-          "y": 8.00,
+          "height": 96.05,
+          "width": 179.94,
+          "x": 14.59,
+          "y": 14.59,
           "z": 4000.00
         },
         {
-          "config": "{\"name\":\"p1_forecastCard\",\"layouts\":[{\"id\":0,\"position\":{\"x\":205,\"y\":65,\"z\":2000,\"width\":180,\"height\":75,\"tabOrder\":2100}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.Forecast Cost\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Forecast Cost\"},\"Name\":\"cost_record.Forecast Cost\"}]},\"drillFilterOtherVisuals\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'FORECAST: CHART VIEW OFF'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_forecastCard\",\"layouts\":[{\"id\":0,\"position\":{\"x\":222.49240121580547,\"y\":111.85410334346504,\"z\":2000,\"width\":215.19756838905775,\"height\":98.48024316109422,\"tabOrder\":2100}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"cost_record.Forecast Cost\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"c\",\"Entity\":\"cost_record\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"c\"}},\"Property\":\"Forecast Cost\"},\"Name\":\"cost_record.Forecast Cost\"}]},\"drillFilterOtherVisuals\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'FORECAST: CHART VIEW OFF'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 75.00,
-          "width": 180.00,
-          "x": 205.00,
-          "y": 65.00,
+          "height": 98.48,
+          "width": 215.20,
+          "x": 222.49,
+          "y": 111.85,
           "z": 2000.00
         },
         {
-          "config": "{\"name\":\"p1_rgSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":600,\"y\":8,\"z\":7000,\"width\":220,\"height\":45,\"tabOrder\":1300}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"resource_group.resourceGroupName\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"r\",\"Entity\":\"resource_group\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"r\"}},\"Property\":\"resourceGroupName\"},\"Name\":\"resource_group.resourceGroupName\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Dropdown'\"}}}}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Add filter: Resource group'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_rgSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":767.1732522796352,\"y\":15.80547112462006,\"z\":7000,\"width\":218.8449848024316,\"height\":96.04863221884499,\"tabOrder\":1300}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"resource_group.resourceGroupName\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"r\",\"Entity\":\"resource_group\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"r\"}},\"Property\":\"resourceGroupName\"},\"Name\":\"resource_group.resourceGroupName\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Dropdown'\"}}}}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Add filter: Resource group'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 45.00,
-          "width": 220.00,
-          "x": 600.00,
-          "y": 8.00,
+          "height": 96.05,
+          "width": 218.84,
+          "x": 767.17,
+          "y": 15.81,
           "z": 7000.00
         },
         {
-          "config": "{\"name\":\"p1_serviceSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":370,\"y\":8,\"z\":6000,\"width\":220,\"height\":45,\"tabOrder\":1200}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"service.serviceName\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s\",\"Entity\":\"service\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s\"}},\"Property\":\"serviceName\"},\"Name\":\"service.serviceName\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Dropdown'\"}}}}}],\"general\":[{\"properties\":{}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Group by: Service name'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_serviceSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":483.8905775075988,\"y\":14.589665653495441,\"z\":6000,\"width\":232.21884498480242,\"height\":97.2644376899696,\"tabOrder\":1200}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"service.serviceName\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s\",\"Entity\":\"service\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s\"}},\"Property\":\"serviceName\"},\"Name\":\"service.serviceName\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Dropdown'\"}}}}}],\"general\":[{\"properties\":{}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Group by: Service name'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 45.00,
-          "width": 220.00,
-          "x": 370.00,
-          "y": 8.00,
+          "height": 97.26,
+          "width": 232.22,
+          "x": 483.89,
+          "y": 14.59,
           "z": 6000.00
         },
         {
-          "config": "{\"name\":\"p1_subSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":180,\"y\":8,\"z\":5000,\"width\":180,\"height\":45,\"tabOrder\":1100}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"subscription.subscriptionName\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s\",\"Entity\":\"subscription\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s\"}},\"Property\":\"subscriptionName\"},\"Name\":\"subscription.subscriptionName\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Dropdown'\"}}}}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Subscription'\"}}}}}]}}}",
+          "config": "{\"name\":\"p1_subSlicer\",\"layouts\":[{\"id\":0,\"position\":{\"x\":222.49240121580547,\"y\":14.589665653495441,\"z\":5000,\"width\":215.19756838905775,\"height\":96.04863221884499,\"tabOrder\":1100}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"subscription.subscriptionName\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s\",\"Entity\":\"subscription\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s\"}},\"Property\":\"subscriptionName\"},\"Name\":\"subscription.subscriptionName\"}]},\"drillFilterOtherVisuals\":true,\"objects\":{\"data\":[{\"properties\":{\"mode\":{\"expr\":{\"Literal\":{\"Value\":\"'Dropdown'\"}}}}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Subscription'\"}}}}}]}}}",
           "filters": "[]",
-          "height": 45.00,
-          "width": 180.00,
-          "x": 180.00,
-          "y": 8.00,
+          "height": 96.05,
+          "width": 215.20,
+          "x": 222.49,
+          "y": 14.59,
           "z": 5000.00
         }
       ],
-      "width": 1280.00
+      "width": 1600.00
     }
   ]
 }
